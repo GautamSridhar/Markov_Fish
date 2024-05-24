@@ -6,17 +6,6 @@ from scipy.sparse.linalg import eigs
 from scipy.linalg import eig
 from scipy.sparse import diags,identity,coo_matrix, csr_matrix
 
-#def segment_maskedArray(tseries,min_size=50):
-#    '''
-#    Segments  time series in case it has missing data
-#    '''
-#    if len(tseries.shape)>1:
-#        mask = ~np.any(tseries.mask,axis=1)
-#    else:
-#        mask = ~tseries.mask
-#    segments = np.where(np.abs(np.diff(np.concatenate([[False], mask, [False]]))))[0].reshape(-1, 2)
-#    return segments
-
 
 def trajectory_matrix_sims(X,K):
     '''
@@ -34,32 +23,6 @@ def trajectory_matrix_sims(X,K):
     else:
         return np.vstack([np.hstack(np.flip(X[t:t+K+1,:],axis=0)) for t in range(len(X)-K-1)])
 
-
-#def trajectory_matrix(seqs,K,min_size=50):
-#    dim = seqs.shape[1]
-#    X_final = ma.zeros((seqs.shape[0],dim,K))
-#    for d in range(dim):
-#        segments = segment_maskedArray(seqs[:,d])
-#        diffs = np.hstack(np.diff(segments))
-#        sel = diffs>min_size
-#        segments = segments[sel]
-#        X_traj_all = ma.zeros((len(seqs)-K,K))
-#        for i in range(len(segments)):
-#            t0,tf = segments[i]
-#            seq = seqs[t0:tf,d]
-#            N = seq.shape[0]
-#            diagonals = [np.ones(N-k) for k in range(K)]
-#            D = diags(diagonals, np.arange(0,K),format="csr")
-#            seqs_ = seq-seqs[:,d].min()+1
-#            X_traj = D.multiply(csr_matrix(seqs_)).data[:(N-K)*K].reshape(N-K,K)#+seqs.min()-1
-#            X_traj_all[t0:tf-K] = X_traj
-#        X_traj_all[X_traj_all==0] = ma.masked
-#        X_traj_all = X_traj_all + seqs[:,d].min()-1
-#        X_final[int(np.floor(K/2)):-int(np.ceil(K/2)),d,:] = X_traj_all
-#        X_final[:int(np.floor(K/2))] = ma.masked
-#        X_final[-int(np.ceil(K/2)):] = ma.masked
-#    X_final = X_final.reshape(-1,dim*K)
-#    return X_final
 
 def segment_maskedArray(tseries,min_size=50):
     '''
