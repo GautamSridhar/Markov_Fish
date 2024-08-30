@@ -19,10 +19,6 @@ from joblib import Parallel, delayed
 import msmtools.estimation as msm_estimation
 from scipy.sparse import diags,identity,coo_matrix, csr_matrix
 
-np.random.seed(42)
-
-import importlib
-# importlib.reload(embed)
 
 
 def unwrapma(x):
@@ -78,8 +74,6 @@ def rec_trajectory_reflective(dpsi,dist,psi0,X0,xmin,xmax):
                 elif newX[1]<xmin:
                     newX[1] = 2*xmin-newX[1]
                 print('fixed',newX)
-#             else:
-#                 print('success',newX)
             new_vec = newX-X
             psi = np.arctan2(new_vec[1],new_vec[0])
         X = newX
@@ -93,7 +87,6 @@ def MSD_unc(x, lags):
     Unc = ma.zeros((len(lags),))
     Unc.mask=True
     for i, lag in enumerate(lags):
-#         print(lag)
         if lag==0:
             mu[i] = 0
             Unc[0]=len(x[:,0].compressed())
@@ -157,7 +150,6 @@ def get_sims_state(state_idx,labels_fish,kmeans_labels,psi_start,
         lookup_table[state] = np.arange(len(labels_state0))[mask]
 
     lcs,P = op_calc.transition_matrix(labels_state0,delay,return_connected=True)
-    print(lcs.shape)
     final_labels_state = op_calc.get_connected_labels(labels_state0,lcs)
     unique_labels = np.unique(final_labels_state.compressed())
     states0 = np.random.choice(unique_labels,n_sims).astype(int)
@@ -184,7 +176,6 @@ def get_sims_group(labels_group,P,dpsi,dist,psi_start,X_start,delay=1,n_sims=10,
     final_labels_state = op_calc.get_connected_labels(labels_group,lcs)
     unique_labels = np.unique(final_labels_state.compressed())
     states0 = np.random.choice(unique_labels,n_sims).astype(int)
-    # states0 = np.ones(n_sims,dtype=int)*np.unique(final_labels_state.compressed())[0]
     
     sims = Parallel(n_jobs=100)(delayed(simulate_parallel)(P,state0,len_sim,lcs) for state0 in states0)
     
@@ -198,22 +189,14 @@ def get_sims_group(labels_group,P,dpsi,dist,psi_start,X_start,delay=1,n_sims=10,
 
 
 def get_sims_group2(labels_fish,lookup_table,fish_idx,dpsi,dist,psi_start,X_start,delay=1,n_sims=10, len_sim = 1000):
-    print(fish_idx)
     labels_group = labels_fish.copy()
     labels_group[fish_idx] = ma.masked
     labels_group = ma.hstack(labels_group)
-    # lookup_table = {}
-    # for state in np.unique(labels_group.compressed()):
-    #     mask = labels_group==state
-    #     lookup_table[state] = np.arange(len(labels_group))[mask]
 
     lcs,P = op_calc.transition_matrix(labels_group,delay,return_connected=True)
-    # P = csr_matrix(P)
-    # lcs = msm_estimation.largest_connected_set(P)
     final_labels_state = op_calc.get_connected_labels(labels_group,lcs)
     unique_labels = np.unique(final_labels_state.compressed())
     states0 = np.random.choice(unique_labels,n_sims).astype(int)
-    # states0 = np.ones(n_sims,dtype=int)*np.unique(final_labels_state.compressed())[0]
     
     sims = Parallel(n_jobs=100)(delayed(simulate_parallel)(P,state0,len_sim,lcs) for state0 in states0)
     
@@ -232,11 +215,9 @@ def get_sims_group3(labels_fish,P,lookup_table,dpsi,dist,psi_start,X_start,delay
     labels_group = labels_fish.copy()
     labels_group = ma.hstack(labels_group)
 
-    # lcs,P = op_calc.transition_matrix(labels_group,delay,return_connected=True)
     final_labels_state = op_calc.get_connected_labels(labels_group,lcs)
     unique_labels = np.unique(final_labels_state.compressed())
     states0 = np.random.choice(unique_labels,n_sims).astype(int)
-    # states0 = np.ones(n_sims,dtype=int)*np.unique(final_labels_state.compressed())[0]
     
     sims = Parallel(n_jobs=100)(delayed(simulate_parallel)(P,state0,len_sim,lcs) for state0 in states0)
     

@@ -5,7 +5,7 @@ import os
 import sys
 import functools
 import concurrent.futures
-sys.path.append('/network/lustre/iss02/home/gautam.sridhar/Markov_Fish/utils/')
+sys.path.append('/Markov_Fish/utils/') ## Update Path here
 import h5py
 #numpy
 import numpy as np
@@ -41,10 +41,6 @@ def calc_entropy_from_data(data, bouts, conditions,params):
     data_bootstrap = np.asarray(copy.deepcopy(data),dtype='object')
     print('Seed:{}'.format(seed))
     np.random.seed(seed)
-    # condition_labels = ['Light (5x5cm)','Light (1x5cm)','Looming(5x5cm)','ChasingDot coarsespeeds(5x5cm)','ChasingDot finespeeds(5x5cm)','Dark_Transitions(5x5cm)',
-    #                     'Phototaxis','Optomotor Response (1x5cm)','Optokinetic Response (5x5cm)','Dark (5x5cm)','3 min Light<->Dark(5x5cm)',
-    #                     'Prey Capture Param. (2.5x2.5cm)','Prey Capture Param. RW. (2.5x2.5cm)',
-    #                     'Prey Capture Rot.(2.5x2.5cm)','Prey capture Rot. RW. (2.5x2.5cm)','Light RW. (2.5x2.5cm)']
 
     condition_labels = ['Light (5x5cm)','Light (1x5cm)','Looming(5x5cm)','Dark_Transitions(5x5cm)',
                         'Phototaxis','Optomotor Response (1x5cm)','Optokinetic Response (5x5cm)','Dark (5x5cm)','3 min Light<->Dark(5x5cm)',
