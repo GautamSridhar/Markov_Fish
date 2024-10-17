@@ -159,16 +159,22 @@ def main(argv):
 
     args=parser.parse_args()
 
-    condition_labels = ['Light (5x5cm)','Light (1x5cm)','Looming(5x5cm)','ChasingDot coarsespeeds(5x5cm)','ChasingDot finespeeds(5x5cm)','Dark_Transitions(5x5cm)',
-                    'Phototaxis','Optomotor Response (1x5cm)','Optokinetic Response (5x5cm)','Dark (5x5cm)','3 min Light<->Dark(5x5cm)',
-                    'Prey Capture Param. (2.5x2.5cm)','Prey Capture Param. RW. (2.5x2.5cm)',
-                    'Prey Capture Rot.(2.5x2.5cm)','Prey capture Rot. RW. (2.5x2.5cm)','Light RW. (2.5x2.5cm)']
 
+    condition_labels = ['Light (5x5cm)','Light (1x5cm)','Looming(5x5cm)','Dark_Transitions(5x5cm)',
+                        'Phototaxis','Optomotor Response (1x5cm)','Optokinetic Response (5x5cm)','Dark (5x5cm)','3 min Light<->Dark(5x5cm)',
+                        'Prey Capture Param. (2.5x2.5cm)','Prey Capture Param. RW. (2.5x2.5cm)',
+                        'Prey Capture Rot.(2.5x2.5cm)','Prey capture Rot. RW. (2.5x2.5cm)','Light RW. (2.5x2.5cm)']
 
-    condition_recs = np.array([[515,525],[160,172],[87,148],[43,60],[22,43],[60,87],
-                           [202,232],[148,160],[172,202],[505,515],[0,22],
-                           [232,301],[347,445],[301,316],[316,347],
-                           [445,505]])
+    condition_recs = np.array([[453,463],[121,133],[49,109],[22,49],[163,193],[109,121],
+                               [133,164],[443,453],[0,22],
+                               [193,258],[304,387],[258,273],[273,304],
+                               [387,443]])
+
+    conditions = np.zeros((np.max(condition_recs),2),dtype='object')
+    for k in range(len(condition_recs)):
+        t0,tf = condition_recs[k]
+        conditions[t0:tf,0] = np.arange(t0,tf)
+        conditions[t0:tf,1] = [condition_labels[k] for t in range(t0,tf)]
 
     f = h5py.File(args.Out + args.DatasetName + '/kmeans_labels_K5_N1200_s8684.h5')
     lengths_all = np.array(f['MetaData/lengths_data'], dtype=int)
@@ -176,34 +182,16 @@ def main(argv):
 
     labels_fish[labels_fish == 1300] = ma.masked
 
-    conditions = np.zeros((np.max(condition_recs),2),dtype='object')
-
-    for k in range(len(condition_labels)):
-        t0,tf = condition_recs[k]
-        conditions[t0:tf,0] = np.arange(t0,tf)
-        conditions[t0:tf,1] = [condition_labels[k] for t in range(t0,tf)]
-
     path_to_filtered_data = '/network/lustre/iss02/home/gautam.sridhar/Markov_Fish/Datasets/JM_Data/'
-    recs_remove = np.load(path_to_filtered_data + 'recs_remove.npy')
-    recs_remove = np.hstack([recs_remove,np.arange(22,60)])
     P_ensemble = np.load(path_to_filtered_data + 'P_ensemble_ex8_N1200_s8684.npy')
-
-    conditions = np.delete(conditions, recs_remove, axis=0)
 
     eigfs, inv_measure, final_labels = perform_partition(P_ensemble, labels_fish,delay = args.Delay, n_state = args.N)
 
     epss = np.logspace(-2,0,15,base=10)
-    # alphas = np.logspace()
-    # epss = np.array([0.05,0.09,0.1,0.3])
 
     n_states = [2,3,4,5,6,7,8,9]
     n_states = np.append(n_states, np.round(np.logspace(1,3,25,base=10)).astype(int))
 
-
-    condition_labels = ['Light (5x5cm)','Light (1x5cm)','Looming(5x5cm)','Dark_Transitions(5x5cm)',
-                    'Phototaxis','Optomotor Response (1x5cm)','Optokinetic Response (5x5cm)','Dark (5x5cm)','3 min Light<->Dark(5x5cm)',
-                    'Prey Capture Param. (2.5x2.5cm)','Prey Capture Param. RW. (2.5x2.5cm)',
-                    'Prey Capture Rot.(2.5x2.5cm)','Prey capture Rot. RW. (2.5x2.5cm)','Light RW. (2.5x2.5cm)']
 
     grid_values = {'C':np.logspace(-1,1,10,base=10)}
 

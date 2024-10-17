@@ -5,7 +5,7 @@ import os
 import sys
 import functools
 import concurrent.futures
-sys.path.append('/Markov_Fish/utils/') ## Update Path here
+sys.path.append('/Users/gautam.sridhar/Documents/Repos/Markov_Fish/utils/') ## Update Path here
 import h5py
 #numpy
 import numpy as np
@@ -89,14 +89,9 @@ def main(argv):
     f = h5py.File(path_to_filtered_data+args.DatasetName + '.h5','r')
 
     pca_fish = ma.array(f['pca_fish'])[:,:,:20]
-    # pca_fish = ma.array(f['bout_types'],dtype='float')[:,:,np.newaxis]
     pca_fish[pca_fish==0] = ma.masked
-    # pca_fish = np.delete(pca_fish, recs_remove,axis=0)
-    # pca_fish[pca_fish==0] = ma.masked
     print(pca_fish.shape, flush=True)
-    #lengths = np.load(path_to_filtered_data + 'lengths_tcflies.npy')[:]
     lengths = ma.array(f['MetaData/lengths_data'],dtype=int)[:]
-    # lengths = np.delete(lengths, recs_remove)
 
     record_list = []
     for i,l in enumerate(lengths):
@@ -105,23 +100,21 @@ def main(argv):
 
     f.close()
 
-    condition_recs = np.array([[515,525],[160,172],[87,148],[43,60],[22,43],[60,87],
-                               [202,232],[148,160],[172,202],[505,515],[0,22],
-                               [232,301],[347,445],[301,316],[316,347],
-                               [445,505]])
+    condition_labels = ['Light (5x5cm)','Light (1x5cm)','Looming(5x5cm)','Dark_Transitions(5x5cm)',
+                        'Phototaxis','Optomotor Response (1x5cm)','Optokinetic Response (5x5cm)','Dark (5x5cm)','3 min Light<->Dark(5x5cm)',
+                        'Prey Capture Param. (2.5x2.5cm)','Prey Capture Param. RW. (2.5x2.5cm)',
+                        'Prey Capture Rot.(2.5x2.5cm)','Prey capture Rot. RW. (2.5x2.5cm)','Light RW. (2.5x2.5cm)']
 
-    condition_labels = ['Light (5x5cm)','Light (1x5cm)','Looming(5x5cm)','ChasingDot coarsespeeds(5x5cm)','ChasingDot finespeeds(5x5cm)','Dark_Transitions(5x5cm)',
-                    'Phototaxis','Optomotor Response (1x5cm)','Optokinetic Response (5x5cm)','Dark (5x5cm)','3 min Light<->Dark(5x5cm)',
-                    'Prey Capture Param. (2.5x2.5cm)','Prey Capture Param. RW. (2.5x2.5cm)',
-                    'Prey Capture Rot.(2.5x2.5cm)','Prey capture Rot. RW. (2.5x2.5cm)','Light RW. (2.5x2.5cm)']
+    condition_recs = np.array([[453,463],[121,133],[49,109],[22,49],[163,193],[109,121],
+                               [133,164],[443,453],[0,22],
+                               [193,258],[304,387],[258,273],[273,304],
+                               [387,443]])
 
     conditions = np.zeros((np.max(condition_recs),2),dtype='object')
     for k in range(len(condition_recs)):
         t0,tf = condition_recs[k]
         conditions[t0:tf,0] = np.arange(t0,tf)
         conditions[t0:tf,1] = [condition_labels[k] for t in range(t0,tf)]
-
-    conditions = np.delete(conditions,recs_remove,axis=0)
 
     min_count=200
     n_seeds = np.random.randint(0,10000,size=args.Seeds) # number of seeds for checking randomness

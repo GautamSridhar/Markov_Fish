@@ -130,23 +130,22 @@ def main(argv):
     args=parser.parse_args()
 
     f = h5py.File(args.Out + args.DatasetName + '/kmeans_labels_K{}_N{}_s8646.h5'.format(args.K, args.n_clusters))
-    labels_fish_allrec = ma.array(f['labels_fish'],dtype=int)
+    labels_fish = ma.array(f['labels_fish'],dtype=int)
     lengths_all = ma.array(f['MetaData/lengths_data'],dtype=int)
     f.close()
 
     path_to_filtered_data = '/network/lustre/iss02/home/gautam.sridhar/Markov_Fish/Datasets/JM_Data/'
-    recs_remove = np.load(path_to_filtered_data + 'recs_remove.npy')
     P_ensemble = np.load(path_to_filtered_data + 'P_ensemble_ex7_N1200_s8646.npy')
 
-    condition_recs = np.array([[515,525],[160,172],[87,148],[43,60],[22,43],[60,87],
-                           [202,232],[148,160],[172,202],[505,515],[0,22],
-                           [232,301],[347,445],[301,316],[316,347],
-                           [445,505]])
+    condition_labels = ['Light (5x5cm)','Light (1x5cm)','Looming(5x5cm)','Dark_Transitions(5x5cm)',
+                        'Phototaxis','Optomotor Response (1x5cm)','Optokinetic Response (5x5cm)','Dark (5x5cm)','3 min Light<->Dark(5x5cm)',
+                        'Prey Capture Param. (2.5x2.5cm)','Prey Capture Param. RW. (2.5x2.5cm)',
+                        'Prey Capture Rot.(2.5x2.5cm)','Prey capture Rot. RW. (2.5x2.5cm)','Light RW. (2.5x2.5cm)']
 
-    condition_labels = ['Light (5x5cm)','Light (1x5cm)','Looming(5x5cm)','ChasingDot coarsespeeds(5x5cm)','ChasingDot finespeeds(5x5cm)','Dark_Transitions(5x5cm)',
-                    'Phototaxis','Optomotor Response (1x5cm)','Optokinetic Response (5x5cm)','Dark (5x5cm)','3 min Light<->Dark(5x5cm)',
-                    'Prey Capture Param. (2.5x2.5cm)','Prey Capture Param. RW. (2.5x2.5cm)',
-                    'Prey Capture Rot.(2.5x2.5cm)','Prey capture Rot. RW. (2.5x2.5cm)','Light RW. (2.5x2.5cm)']
+    condition_recs = np.array([[453,463],[121,133],[49,109],[22,49],[163,193],[109,121],
+                               [133,164],[443,453],[0,22],
+                               [193,258],[304,387],[258,273],[273,304],
+                               [387,443]])
 
     conditions = np.zeros((np.max(condition_recs),2),dtype='object')
     for k in range(len(condition_recs)):
@@ -154,26 +153,9 @@ def main(argv):
         conditions[t0:tf,0] = np.arange(t0,tf)
         conditions[t0:tf,1] = [condition_labels[k] for t in range(t0,tf)]
 
-    conditions = np.delete(conditions, recs_remove, axis=0)
-    # lengths_rem = np.delete(lengths_all, recs_remove)
-    # recs_ = np.asarray(conditions[:,0], dtype=int)
-
     to_mask = 1300
 
-    # maxL = np.max(lengths_all[recs_])
-    maxL = np.max(lengths_all)
-
-    labels_fish_allrec[labels_fish_allrec == to_mask] = ma.masked
-
-    # labels_fishrec = to_mask * ma.ones((len(recs_), maxL))
-    # labels_fishrec = labels_fish_allrec[recs_,:maxL+2]
-    # labels_fishrec = np.delete(labels_fishrec,4,0)
-
-    # labels_fishrec[labels_fishrec == to_mask] = ma.masked
-    labels_fish = labels_fish_allrec
-
-    # lengths_rem = np.delete(lengths_all, recs_remove)
-    lengths_rem = lengths_all
+    labels_fish[labels_fish == to_mask] = ma.masked
 
     labels_all= ma.concatenate(labels_fish,axis=0)
 
@@ -211,7 +193,7 @@ def main(argv):
         eigfs, inv_measure, final_labels = perform_partition(P_ensemble, labels_fish,delay = args.Tau, n_state = args.Scale)
         cluster_fish, cluster_fish_mask = coarse_grain(eigfs, final_labels, labels_fish, inv_measure, n_state = args.Scale)
 
-    simlabels_fish = to_mask*ma.ones((args.Seeds, len(conditions),np.max(lengths_rem)), dtype=int)
+    simlabels_fish = to_mask*ma.ones((args.Seeds, len(conditions),np.max(lengths_all)), dtype=int)
 
     np.random.seed(42)
     n_seeds = np.random.randint(0,10000,args.Seeds)
